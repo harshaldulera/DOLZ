@@ -16,3 +16,34 @@ showPDH_PDL = input.bool(true, "Show PDH / PDL")
 
 // HTF High / Low (Liquidity Points)
 [htfHigh, htfLow] = request.security(syminfo.tickerid, liquidityTF, [high, low])
+
+var float lastHigh = na
+var float lastLow = na
+
+isEqual(a, b) => 
+    diff = math.abs(a - b)
+    avg = (a + b) / 2
+    percentageDiff = (diff / avg) * 100
+    percentageDiff < threshold
+
+// Liquidity Zone Plotting
+// Equal Highs
+if showHighs and isEqual(htfHigh, lastHigh)
+    line.new(bar_index[1], lastHigh, bar_index, htfHigh, extend = extend.right, color = color.red, style = line.style_dotted, width = 1)
+    label.new(bar_index, htfHigh, "BSL", style = label.style_label_down, color = color.red, textcolor = color.black)
+
+// Equal Lows
+if showLows and not na(lastLow) and isEqual(htfLow, lastLow)
+    line.new(bar_index[1], lastLow, bar_index, htfLow, extend=extend.right, color=color.blue, style=line.style_dashed, width=1)
+    label.new(bar_index, htfLow, "SSL", style=label.style_label_up, color=color.blue, textcolor=color.black)
+
+lastHigh := htfHigh
+lastLow := htfLow
+
+
+// PDH / PDL Plotting
+dailyHigh = request.security(syminfo.tickerid, "D", high[1])
+dailyLow  = request.security(syminfo.tickerid, "D", low[1])
+
+plot(showPDH_PDL ? dailyHigh : na, title="PDH", color=color.orange, linewidth=1, style=plot.style_line, trackprice=true)
+plot(showPDH_PDL ? dailyLow  : na, title="PDL", color=color.purple, linewidth=1, style=plot.style_line, trackprice=true)
