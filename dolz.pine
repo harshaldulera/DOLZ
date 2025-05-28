@@ -13,6 +13,8 @@ threshold = input.float(0.1, "EQ High / Low Threshold", minval = 0.01)
 showHighs = input.bool(true, "Show Highs")
 showLows = input.bool(true, "Show Lows")
 showPDH_PDL = input.bool(true, "Show PDH / PDL")
+pdhColor = input.color(color.orange, "PDH Color")
+pdlColor = input.color(color.purple, "PDL Color")
 
 // HTF High / Low (Liquidity Points)
 [htfHigh, htfLow] = request.security(syminfo.tickerid, liquidityTF, [high, low])
@@ -42,8 +44,32 @@ lastLow := htfLow
 
 
 // PDH / PDL Plotting
-dailyHigh = request.security(syminfo.tickerid, "D", high[1])
-dailyLow  = request.security(syminfo.tickerid, "D", low[1])
+var line pdhLine = na
+var line pdlLine = na
+var label pdhLabel = na
+var label pdlLabel = na
 
-plot(showPDH_PDL ? dailyHigh : na, title="PDH", color=color.orange, linewidth=1, style=plot.style_line, trackprice=true)
-plot(showPDH_PDL ? dailyLow  : na, title="PDL", color=color.purple, linewidth=1, style=plot.style_line, trackprice=true)
+newDay = ta.change(time("D"))
+pdhVal = request.security(syminfo.tickerid, "D", high[1])
+pdlVal = request.security(syminfo.tickerid, "D", low[1])
+
+if showPDH_PDL and newDay
+    // Delete old lines & labels
+    if not na(pdhLine)
+        line.delete(pdhLine)
+    if not na(pdhLabel)
+        label.delete(pdhLabel)
+    if not na(pdlLine)
+        line.delete(pdlLine)
+    if not na(pdlLabel)
+        label.delete(pdlLabel)
+
+    // Draw new lines
+    pdhLine := line.new(bar_index, pdhVal, bar_index + 50, pdhVal,
+        extend=extend.right, color=pdhColor, style=line.style_solid, width=2)
+    pdlLine := line.new(bar_index, pdlVal, bar_index + 50, pdlVal,
+        extend=extend.right, color=pdlColor, style=line.style_solid, width=2)
+
+    // Add label text at start of line
+    pdhLabel := label.new(bar_index, pdhVal, "PDH", style=label.sty, textcolor=color.white, color=pdhColor)
+    pdlLabel := label.new(bar_index, pdlVal, "PDL", style=label.style_label_left, textcolor=color.white, color=pdlColor)
