@@ -1,4 +1,4 @@
-//@version=5
+//@version=6
 // # ========================================================================= #
 // #                   |  Draw-On-Liquidity Indicator  |
 // # ========================================================================= #
@@ -10,8 +10,8 @@ indicator(title = "Draw-On-Liquidity", shorttitle = "DOLZ", overlay = true, max_
 // Inputs
 liquidityTF = input.timeframe("60", "Liquidity Zone Timeframe")
 threshold = input.float(0.1, "EQ High / Low Threshold", minval = 0.01)
-showHighs = input.bool(true, "Show Highs")
-showLows = input.bool(true, "Show Lows")
+// showHighs = input.bool(true, "Show Highs")
+// showLows = input.bool(true, "Show Lows")
 showPDH_PDL = input.bool(true, "Show PDH / PDL")
 pdhColor = input.color(color.orange, "PDH Color")
 pdlColor = input.color(color.purple, "PDL Color")
@@ -48,13 +48,14 @@ var line pdhLine = na
 var line pdlLine = na
 var label pdhLabel = na
 var label pdlLabel = na
+var int pdhStartBar = na
+var int pdlStartBar = na
 
 newDay = ta.change(time("D"))
 pdhVal = request.security(syminfo.tickerid, "D", high[1])
 pdlVal = request.security(syminfo.tickerid, "D", low[1])
 
-if showPDH_PDL and newDay
-    // Delete old lines & labels
+if showPDH_PDL and (newDay != 0)
     if not na(pdhLine)
         line.delete(pdhLine)
     if not na(pdhLabel)
@@ -64,12 +65,11 @@ if showPDH_PDL and newDay
     if not na(pdlLabel)
         label.delete(pdlLabel)
 
-    // Draw new lines
-    pdhLine := line.new(bar_index, pdhVal, bar_index + 50, pdhVal,
-        extend=extend.right, color=pdhColor, style=line.style_solid, width=2)
-    pdlLine := line.new(bar_index, pdlVal, bar_index + 50, pdlVal,
-        extend=extend.right, color=pdlColor, style=line.style_solid, width=2)
+    pdhStartBar := bar_index
+    pdlStartBar := bar_index
 
-    // Add label text at start of line
-    pdhLabel := label.new(bar_index, pdhVal, "PDH", style=label.sty, textcolor=color.white, color=pdhColor)
-    pdlLabel := label.new(bar_index, pdlVal, "PDL", style=label.style_label_left, textcolor=color.white, color=pdlColor)
+    pdhLine := line.new(x1=pdhStartBar - 100, y1=pdhVal, x2=pdhStartBar + 50, y2=pdhVal, extend = extend.right, color = pdhColor, style = line.style_solid, width = 2)
+    pdlLine := line.new(x1=pdlStartBar - 100, y1=pdlVal, x2=pdlStartBar + 50, y2=pdlVal, extend = extend.right, color = pdlColor, style = line.style_solid, width = 2)
+
+    pdhLabel := label.new(x=pdhStartBar, y=pdhVal, text = "PDH", textcolor = pdhColor, size = size.normal, style = label.style_none)
+    pdlLabel := label.new(x=pdlStartBar, y=pdlVal, text = "PDL", textcolor = pdlColor, size = size.normal, style = label.style_none)
