@@ -1,0 +1,18 @@
+//@version=5
+// # ========================================================================= #
+// #                   |  Draw-On-Liquidity Indicator  |
+// # ========================================================================= #
+indicator(title = "Draw-On-Liquidity", shorttitle = "DOLZ", overlay = true, max_lines_count = 500, max_labels_count = 500)
+// # ========================================================================= #
+// #                   |  Draw-On-Liquidity Indicator  |
+// # ========================================================================= #
+
+// Inputs
+liquidityTF = input.timeframe("60", "Liquidity Zone Timeframe")
+threshold = input.float(0.1, "EQ High / Low Threshold", minval = 0.01)
+showHighs = input.bool(true, "Show Highs")
+showLows = input.bool(true, "Show Lows")
+showPDH_PDL = input.bool(true, "Show PDH / PDL")
+
+// HTF High / Low (Liquidity Points)
+[htfHigh, htfLow] = request.security(syminfo.tickerid, liquidityTF, [high, low])
